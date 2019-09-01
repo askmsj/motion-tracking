@@ -255,7 +255,7 @@ while True:
 
     #resize output
     if not cli:
-        frame1 = frame # cv2.resize(frame, (int(W/2), int(H/2)))
+        frame1 = cv2.resize(frame, (int(W/2), int(H/2)))
         cv2.imshow("Frame-res", frame1)
         
     key = cv2.waitKey(1) & 0xFF
