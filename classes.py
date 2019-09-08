@@ -209,7 +209,7 @@ class Item:
             self.lastMarker = refMarker        
             return refMarker.id if refMarker != None else -1
         elif self.name == 'vehicle':
-            return 10 if self.status() == 'empty' else 1
+            return 1 if self.status() == 'parked' else (10 if self.status() == 'emoty' else 5)
                 
         
         #print(CONST_HEIGHT, self.y_current, self.y_current / CONST_HEIGHT) 
