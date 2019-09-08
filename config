@@ -1,0 +1,6 @@
+#mode vehicle set vehicle_id marker
+#mode gate set gate_id marker
+vehicle_id=71
+destination=http://192.168.0.199/index.php/api/
+#http://jrg.lab112.pl/index.php/api/
+source=https://github.com/askmsj/motion-tracking.git
