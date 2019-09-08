@@ -53,12 +53,8 @@ def post(_url, _params = {}):
     
     r = None
     try:
-        #print('ttt',json.dumps(_params))      
-        print(type(_params))
-        print(url, _params, _data)
+        
         r = requests.post(url = url, data = {'data': _data})
-        print(r)
-        print(r.headers['content-type'])
         print(r.content)
     except ValueError:
         r = None

@@ -214,7 +214,7 @@ while True:
         #statuses
         newStatus = item.status()
         newPosition = item.getPositionPercent()
-        
+        print('cm-visible', item.controlMarker.visible)
         if item.id != None and (status != newStatus or position != newPosition):
             every1min = time.time()
             status = newStatus
