@@ -214,7 +214,6 @@ while True:
         #statuses
         newStatus = item.status()
         newPosition = item.getPositionPercent()
-        print('cm-visible', item.controlMarker.visible)
         if item.id != None and (status != newStatus or position != newPosition):
             every1min = time.time()
             status = newStatus
@@ -242,9 +241,6 @@ while True:
         every5min = time.time()
         jd = device.getJsonData(str(item.getControlMarker().id))
         r.post("device/" + str(device.getSerial()), jd)
-        #print(r.baseURL + "temp/device/gate/" + str(device.getSerial()) + "/" + str(item.id)
-         #      +"/" + str(device.getTemperature()))
-        #r.post("temp/device/gate/" + str(device.getSerial()) + "/" + str(item.id) + "/" + str(device.getTemperature()))
     
     
     #print fps
