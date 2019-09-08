@@ -178,11 +178,14 @@ while True:
             hideAllMarkers()  #ide all markers
             for m in range(len(ids)):
                 #ustawienie id bramy dla bramy / miejsca pojazdu na podstawie markera
-                if ids[m][0] >= 50 and ids[m][0] < 100:
-                    if ids[m][0] >= 70:
+                _cm_read = ids[m][0]
+                if _cm_read >= 50 and _cm_read < 100:
+                    if _cm_read >= 70:
                         item.name = 'vehicle'
-                    if item.id == None:
-                        _cm = Marker(ids[m][0])
+                    else:
+                        item.name = 'gate'
+                    if item.id == None or item.id != _cm_read:
+                        _cm = Marker(_cm_read)
                         item.setControlMarker(_cm)
                         
                     cm = item.getControlMarker()
