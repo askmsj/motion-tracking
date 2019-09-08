@@ -98,8 +98,10 @@ class Item:
         self.bottom = bottom
 
     def setControlMarker(self, marker):
+        marker.setVisible(True)
         self.controlMarker = marker
         self.id = marker.id - 50 if self.name == 'gate' else marker.id - 70
+        
 
     def getControlMarker(self):
         return self.controlMarker
