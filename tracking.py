@@ -224,7 +224,7 @@ while True:
                 r.post("gate/" + str(item.id)
                +"/"+item.urlStatus() + "/" + str(position))
             if item.name == 'vehicle':
-                print('####veh-id', item.vehicleId)
+                #print('####veh-id', item.vehicleId)
                 r.post("vehicle/" + str(item.id)
                +"/" + str(item.vehicleId) +"/"+item.urlStatus() + "/" + str(position))
     

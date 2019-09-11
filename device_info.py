@@ -64,11 +64,11 @@ def getThrottled():
     throttled_binary = bin(int(f.split('=')[1], 0))
     #print(throttled_binary)
 
-    warnings = 0
-    for position, message in MESSAGES.items():
-        if len(throttled_binary) > position and throttled_binary[0 - position - 1] == '1':
-            print(message)
-            warnings += 1
+    #warnings = 0
+    #for position, message in MESSAGES.items():
+    #    if len(throttled_binary) > position and throttled_binary[0 - position - 1] == '1':
+    #        print(message)
+    #        warnings += 1
     
     return f
 

@@ -14,35 +14,14 @@ from datetime import datetime
 q = LifoQueue()
 
 def post_request(url, data):
-    print('thread start')
+    #print('thread start')
     now = datetime.now()
     timestamp = datetime.timestamp(now)
     r = requests.post(url = url, data = {'data': data})
-    #time.sleep(2)
     if r.status_code == 200:
         print('thread end', url, r.status_code, r.json(), datetime.fromtimestamp(timestamp))
-    #response = requests.get(one_url)
     #q.put({url, r.content, timestamp})
     #print('thread end')
-
-# Launch our function in a thread
-#print("Launching")
-#for one_url in urls:
-#    t = threading.Thread(target=get_length, args=(one_url,))
-#    threads.append(t)
-#    t.start()
-
-# Joining all
-#print("Joining")
-#for one_thread in threads:
-#    one_thread.join()
-    
-# Retrieving + printing
-#print("Retrieving + printing")
-#while not queue.empty():
-#    one_url, length = queue.get()
-#    print("{0:30}: {1:8,}".format(one_url, length))
-
 
     
 
@@ -58,15 +37,10 @@ def wait_for_internet_connection():
 
 def get(_url, _params = {}):
     PARAMS = _params
-    #PARAMS = {'address': 'dehli technological university'}
-    #_url = "http://maps.googleapis.com/maps/api/geocode/json"
-    
+        
     r = requests.get(url = _url, params = PARAMS)
     #print(r)
     return r
-    #data = r.json()
-    #print(data)
-    #print(data['status'])
     
 def post(_url, _params = {}):
     
@@ -94,10 +68,9 @@ def post(_url, _params = {}):
         #r = requests.post(url = url, data = {'data': _data})
         #q.queue.clear()#tylko ostatni url nas interesuje
         t = threading.Thread(target=post_request, args=(url, _data,))
-        print('main before')
+        #print('main before')
         t.start()
-        print('main wait')
-        #print('q-leb:', q.qsize())
+        #print('main wait')
         #while not q.empty():
         #    url, content, timestamp = q.get()
          #   print(url, content, datetime.fromtimestamp(timestamp))
