@@ -73,7 +73,7 @@ if args.get("vehiclemarker") != None or 'vehicle_id' in config_data.keys():
 elif args.get("gatemarker") != None or 'gate_id' in config_data.keys():
     item = Item('gate')
     mg = args.get("gatemarker") if args.get("gatemarker") != None else config_data['gate_id']
-    item.setControlMarker(Marker(int(args.get("gatemarker"))))
+    item.setControlMarker(Marker(int(mg)))
 else:
     item = Item('gate') #default mode - read from marker
 
@@ -119,6 +119,7 @@ parameters = aruco.DetectorParameters_create()
 #skip frames?
 f_counter = 0
 CONST_F_SKIP_QTY = 1 # skip frames -> run detection every f_skip_qty frame
+status_table = []
 
 #object status and position
 status = None
@@ -163,7 +164,9 @@ while True:
         frame = abc(frame, 80, 60)
     
     
-    #arcuo part - skip frames
+    #arcuo part - skip frames CONST_F_SKIP_QTY > 1
+    #problemy z detekcja markerow przy duzej ilosc fps - bierzemy 3 kolejne klatki i wybieramy jedną z nich (w ktorej jest marker)
+        
     ids = []
     corners = []
     if f_counter >= CONST_F_SKIP_QTY:
@@ -214,20 +217,35 @@ while True:
         #statuses
         newStatus = item.status()
         newPosition = item.getPositionPercent()
-        if item.id != None and (status != newStatus or position != newPosition):
-            every1min = time.time()
-            status = newStatus
-            position = newPosition
-            print('####item', item.name, status)
-            print(position, item.id, item.urlStatus() )
-            if item.name == 'gate':
-                r.post("gate/" + str(item.id)
-               +"/"+item.urlStatus() + "/" + str(position))
-            if item.name == 'vehicle':
-                #print('####veh-id', item.vehicleId)
-                r.post("vehicle/" + str(item.id)
-               +"/" + str(item.vehicleId) +"/"+item.urlStatus() + "/" + str(position))
-    
+            
+        # 3 samples for 3 successive frames
+        status_table.append(item.status());
+        if len(status_table) >= 3:
+            isSame = False
+            for i in range(len(status_table)):
+                if status == status_table[i]:
+                    isSame = True
+            
+            if not isSame:
+                newStatus = status_table[2]
+            
+            status_table.clear()
+                    
+            
+            if item.id != None and (not isSame or status != newStatus or position != newPosition):
+                every1min = time.time()
+                status = newStatus
+                position = newPosition
+                print('####item', item.name, status)
+                print(position, item.id, item.urlStatus() )
+                if item.name == 'gate':
+                    r.post("gate/" + str(item.id)
+                   +"/"+item.urlStatus() + "/" + str(position))
+                if item.name == 'vehicle':
+                    #print('####veh-id', item.vehicleId)
+                    r.post("vehicle/" + str(item.id)
+                   +"/" + str(item.vehicleId) +"/"+item.urlStatus() + "/" + str(position))
+        
     
     #fps update
     fps.update()

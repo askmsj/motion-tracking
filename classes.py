@@ -44,7 +44,7 @@ class Marker(object):
             return True if self.isMoving() and self.y_current > self.y_last else False
 
     def isMoving(self):
-        return abs(self.y_current - self.y_last) > 3 #or abs(self.x_current - self.x_last) > 1
+        return abs(self.y_current - self.y_last) > 4 #or abs(self.x_current - self.x_last) > 1
 
     def isMovingRight(self):
         return True if self.isMoving() and self.x_current > self.x_last else False
