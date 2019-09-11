@@ -229,10 +229,12 @@ while True:
             if not isSame:
                 newStatus = status_table[2]
             
+            print('same:',isSame)
             status_table.clear()
                     
             
-            if item.id != None and (not isSame or status != newStatus or position != newPosition):
+            #if item.id != None and (not isSame or status != newStatus or position != newPosition):
+            if item.id != None and not isSame:
                 every1min = time.time()
                 status = newStatus
                 position = newPosition
