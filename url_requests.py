@@ -4,6 +4,47 @@ import json
 from pprint import pprint
 from urllib.parse import urlencode
 
+import threading
+from queue import Queue
+from queue import LifoQueue
+import time
+from datetime import datetime
+
+
+q = LifoQueue()
+
+def post_request(url, data):
+    print('thread start')
+    now = datetime.now()
+    timestamp = datetime.timestamp(now)
+    r = requests.post(url = url, data = {'data': data})
+    time.sleep(2)
+    print('thread end', url, r.content, datetime.fromtimestamp(timestamp))
+    #response = requests.get(one_url)
+    #q.put({url, r.content, timestamp})
+    #print('thread end')
+
+# Launch our function in a thread
+#print("Launching")
+#for one_url in urls:
+#    t = threading.Thread(target=get_length, args=(one_url,))
+#    threads.append(t)
+#    t.start()
+
+# Joining all
+#print("Joining")
+#for one_thread in threads:
+#    one_thread.join()
+    
+# Retrieving + printing
+#print("Retrieving + printing")
+#while not queue.empty():
+#    one_url, length = queue.get()
+#    print("{0:30}: {1:8,}".format(one_url, length))
+
+
+    
+
 baseURL = "http://192.168.0.199/index.php/api/"
 
 def wait_for_internet_connection():
@@ -45,17 +86,22 @@ def post(_url, _params = {}):
     #data = {'api_dev_key':API_KEY, 
     #    'api_option':'paste',
     #    'api_paste_format':'python'} 
-
-    #json data?
-    #json.dumps(data)
-    # sending post request and saving response as response object
-    #s = requests.Session()
     
     r = None
     try:
         
-        r = requests.post(url = url, data = {'data': _data})
-        print(r.content)
+        #r = requests.post(url = url, data = {'data': _data})
+        #q.queue.clear()#tylko ostatni url nas interesuje
+        t = threading.Thread(target=post_request, args=(url, _data,))
+        print('main before')
+        t.start()
+        print('main wait')
+        #print('q-leb:', q.qsize())
+        #while not q.empty():
+        #    url, content, timestamp = q.get()
+         #   print(url, content, datetime.fromtimestamp(timestamp))
+        
+        #print(r.content)
     except ValueError:
         r = None
     except requests.exceptions.ConnectionError as e2:
