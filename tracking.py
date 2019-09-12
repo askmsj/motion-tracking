@@ -236,9 +236,9 @@ while True:
         status_table.append(item.status());
         if True: # len(status_table) >= 3:
             isSame = False
-            for i in range(len(status_table)):
-                if status == status_table[i]:
-                    isSame = True
+            #for i in range(len(status_table)):
+                #if status == status_table[i]:
+                #    isSame = True
             
             #if not isSame:
             #    newStatus = status_table[2]
@@ -256,7 +256,7 @@ while True:
                 print('@@@', item.isVisible(), item.getMarker(101).visible if item.getMarker(101) != None else ' - ')
                 
                 print('####item', item.name, status)
-                print(position, item.id, item.urlStatus() )
+                print(position, item.id, item.urlStatus())
                 if item.name == 'gate':
                     r.post("gate/" + str(item.id)
                    +"/"+item.urlStatus() + "/" + str(position))

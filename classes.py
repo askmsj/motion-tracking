@@ -75,7 +75,7 @@ class Marker(object):
         yrt = abs(self.current_coords[1][1] - self.last_coords[1][1])
         ylb = abs(self.current_coords[3][1] - self.last_coords[3][1])
         yrb = abs(self.current_coords[2][1] - self.last_coords[2][1])
-        return min(ylt, yrt, yrb, ylb) > self.MIN_MOVE_PX
+        return min(ylt, yrt, yrb, ylb) >= self.MIN_MOVE_PX
         
         
     last_isMoving = None

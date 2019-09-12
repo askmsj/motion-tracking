@@ -18,8 +18,9 @@ def post_request(url, data):
     now = datetime.now()
     timestamp = datetime.timestamp(now)
     r = requests.post(url = url, data = {'data': data})
-    #if r.status_code == 200:
-    #    print('thread end', url, r.status_code, r.json(), datetime.fromtimestamp(timestamp))
+    #print(r.content)
+    if r.status_code == 200:
+        print('thread end', url, r.status_code, r.json(), datetime.fromtimestamp(timestamp))
     #q.put({url, r.content, timestamp})
     #print('thread end')
 
