@@ -253,7 +253,7 @@ while True:
                 status = newStatus
                 position = newPosition
                 
-                print('@@@', item.isVisible(), item.getMarker(101).visible if item.getMarker(101) != None else ' - ')
+                #print('@@@', item.isVisible(), item.getMarker(101).visible if item.getMarker(101) != None else ' - ')
                 
                 print('####item', item.name, status)
                 print(position, item.id, item.urlStatus())
