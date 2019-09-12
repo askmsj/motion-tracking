@@ -9,43 +9,80 @@ class Marker(object):
     y_current = 0
     x_last = 0
     y_last = 0
-    min_move_px = 8
+    MIN_MOVE_PX = 1
     y_min = 0       # min when max opened
     y_max = 0
+    last_coords = [[0,0],[0,0],[0,0],[0,0]]
+    current_coords = [[0,0],[0,0],[0,0],[0,0]]
+    
     def __init__(self, id, ):
         self.id = id
 
     def setItem(self, item):
         self.item = item
 
+    def setMinMovePx(self, px):
+        self.MIN_MOVE_PX = px
+    
+    
+    def setFullCoords(self, coords):
+        #calculate shift for all corners
+        #lt detekcja nieruchomego markera z największym rozrzutem
+        #xlt = abs(coords[0][0] - self.last_coords[0][0])
+        #xrt = abs(coords[1][0] - self.last_coords[1][0])
+        #xlb = abs(coords[3][0] - self.last_coords[3][0])
+        #xrb = abs(coords[2][0] - self.last_coords[2][0])
+        #ylt = abs(coords[0][1] - self.last_coords[0][1])
+        #yrt = abs(coords[1][1] - self.last_coords[1][1])
+        #ylb = abs(coords[3][1] - self.last_coords[3][1])
+        #yrb = abs(coords[2][1] - self.last_coords[2][1])
+        #if min(ylt, yrt, yrb, ylb) > 1: #kazdy punkt przesuniety min o 1 (os y)
+        self.x_last = coords[1][0] if self.x_current == 0  else self.x_current
+        self.y_last = coords[1][1] if self.y_current == 0 else self.y_current
+        self.x_current = coords[1][0]
+        self.y_current = coords[1][1]
+            
+        self.visible = True
+        self.last_coords = self.current_coords
+        self.current_coords = coords
+        return           
+        
+        
     def setCoords(self, coords):
-        #detekcja jako zmiana tylko jeśli przesuniecie wzgledem poprzedniego wieksze niż 4px?
-        if abs(coords[1] - self.x_last) > self.min_move_px:
+        #detekcja jako zmiana tylko jeśli przesuniecie wzgledem poprzedniego wieksze niż min px
+        
+        if abs(coords[1] - self.x_last) > 1:
             self.x_last = coords[0] if self.x_current == 0  else self.x_current
             self.y_last = coords[1] if self.y_current == 0 else self.y_current
             self.x_current = coords[0]
             self.y_current = coords[1]
-            
+        
+        #natychmiast zmień - bez setVisibe
         self.visible = True
 
     def getY(self):
         return self.y_current
 
     def isMovingUp(self):
-        if self.isMoving() and self.y_current < self.y_last:
-            return True
-        else:
-            return False
+        return True if self.isMoving() and self.y_current < self.y_last else False
 
     def isMovingDown(self):
-        #if self.item.name == 'gate':
-        #    return True if self.isMoving() and self.y_current > self.y_last else False
-        #else:
-            return True if self.isMoving() and self.y_current > self.y_last else False
+        return True if self.isMoving() and self.y_current > self.y_last else False
 
-    last_isMoving = None
     def isMoving(self):
-        return abs(self.y_current - self.y_last) > 5
+        
+        ylt = abs(self.current_coords[0][1] - self.last_coords[0][1])
+        yrt = abs(self.current_coords[1][1] - self.last_coords[1][1])
+        ylb = abs(self.current_coords[3][1] - self.last_coords[3][1])
+        yrb = abs(self.current_coords[2][1] - self.last_coords[2][1])
+        return min(ylt, yrt, yrb, ylb) > self.MIN_MOVE_PX
+        
+        
+    last_isMoving = None
+    def isMoving_old(self):
+        
+        
+        return abs(self.y_current - self.y_last) > 2
         current_isMoving = abs(self.y_current - self.y_last) > 3
         out = (True if self.last_isMoving == None else last_isMoving) and current_isMoving
         last_isMoving = current_isMoving
@@ -68,7 +105,10 @@ class Marker(object):
         #self.y_last = self.y_current
 
     last_isVisible = False
-    def setVisible(self, isVisible):
+    def setVisible(self, isVisible, forceOnce = False):
+        if forceOnce == True:
+            self.visible = isVisible
+            return
         
         self.visible = isVisible if self.last_isVisible == isVisible else self.visible
         self.last_isVisible = isVisible
@@ -100,7 +140,7 @@ class Item:
     markers = []
     last_status = None
     rtl = False #true if leaving is the same as closing
-            #false if logic is changed
+            #false if logic is reverse
     
     def __init__(self, name):
         self.name = name
@@ -136,6 +176,7 @@ class Item:
 
     def getMarkers(self):
         return self.markers
+    
     def getMarkersIds(self):
         res = []
         for i in range(len(self.markers)):
@@ -196,7 +237,7 @@ class Item:
         return False
     
     def isParked(self):
-        return self.isVisible() == True and self.isMoving() == False
+        return self.isMoving() == False and self.isVisible() == True
 
     def isEmpty(self):
         return self.controlMarker.visible == True and self.isVisible() == False

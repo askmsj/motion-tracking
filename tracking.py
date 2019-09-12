@@ -48,8 +48,8 @@ print(config_data)
 
 
 #video resolution
-CONST_WIDTH = 1280#640#1280#640#1920#1280
-CONST_HEIGHT = 720#480#720#480#1080#720
+CONST_WIDTH = 640#1280#640#1280#640#1920#1280
+CONST_HEIGHT = 480#720#480#720#480#1080#720
 
 #img correction on/off
 CONST_IMG_ADJ = False
@@ -91,15 +91,15 @@ def findMarkerInAllMarkers(id):
             _res = _m
     return _res
 
-def hideAllMarkers():
+def hideAllMarkers(forceOnce = False):
     for _m in allMarkers:
         #if _m.wasVisible() == False
-        _m.setVisible(False)
+        _m.setVisible(False, forceOnce)
 
     _cm = item.getControlMarker()
     if _cm != None:
-        print('c-m false')
-        _cm.setVisible(False)
+        #print('c-m false')
+        _cm.setVisible(False, forceOnce)
 
 # if a video path was not supplied, grab the reference to the web cam
 if not fromFile and not args.get("video", False):
@@ -120,7 +120,7 @@ parameters = aruco.DetectorParameters_create()
 
 #skip frames?
 f_counter = 0
-CONST_F_SKIP_QTY = 1 # skip frames -> run detection every f_skip_qty frame
+CONST_F_SKIP_QTY = 4 # skip frames -> run detection every f_skip_qty frame
 status_table = []
 
 #object status and position
@@ -130,6 +130,7 @@ position = None
 
 fps = None
 fps = FPS().start()
+frame_counter = 0
 # loop over frames from the video stream
 while True:
     # grab the current frame, then handle if we are using a
@@ -137,12 +138,16 @@ while True:
     frame = vs.read()
     frame = frame[1] if args.get("video", False) or fromFile else frame
 
-    f_counter = f_counter + 1
+    # frame couter - skip
+    f_counter += 1 #f_counter + 1
     
     # check to see if we have reached the end of the stream
     if frame is None:
         break
 
+    #frame coutner
+    frame_counter += 1#frame_counter + 1
+    
     # resize the frame (so we can process it faster) and grab the
     #frame = imutils.resize(frame, width=640)
     (H, W, L) = frame.shape#[:2]
@@ -176,11 +181,11 @@ while True:
         frame = aruco.drawDetectedMarkers(frame, corners, ids)
         f_counter = 0
        
+                
         #analiza odczytanych markerow
         #markery 0-10 level bramy lub pojazdu
-        
         if not ids is None and len(ids) > 0:
-            hideAllMarkers()  #ide all markers
+            #hideAllMarkers()  #ide all markers
             for m in range(len(ids)):
                 #ustawienie id bramy dla bramy / miejsca pojazdu na podstawie markera
                 _cm_read = ids[m][0]
@@ -196,7 +201,7 @@ while True:
                     cm = item.getControlMarker()
                     #dla markerow gate (50-100) nie sprawdzamy polozenia
                     cm.setVisible(True)
-                    print('-c-m true')
+                    #print('-c-m true')
                     #item.visible = True
 
                 #vehicle - wsztstkie markery >100 to id pojazdow
@@ -213,15 +218,19 @@ while True:
                 #gate    
                 _marker = findMarkerInAllMarkers(ids[m][0])             
                 if _marker != None:
-                    _marker.setVisible(True)
-                    _marker.setCoords(corners[m][0][0])
+                    #print('mark-1-', _marker.visible)
+                    #_marker.setVisible(True)
+                    
+                    _marker.setFullCoords(corners[m][0])
+                    #_marker.setCoords(corners[m][0][0])
+                    #print('mark-2-', corners[m][0])
                         
                 
 
         #statuses
         newStatus = item.status()
         newPosition = item.getPositionPercent()
-        print('***', status, newStatus, item.getControlMarker().visible, item.isVisible())
+        #print('***', status, newStatus, item.getControlMarker().visible, item.isVisible())
             
         # 3 samples for 3 successive frames
         status_table.append(item.status());
@@ -261,7 +270,13 @@ while True:
     fps.update()
     fps.stop()
     
-    import json
+    if frame_counter > fps.fps():
+        frame_counter = 0
+        #print('hide')
+        hideAllMarkers()  #ide all markers
+        #hideAllMarkers()  #ide all markers
+            
+    #import json
     #every 5 mins
     if ((time.time() - every5min) / 15 > 1):
         print(str(item.getControlMarker().id) + ':' + str(item.id) + ':' + str(device.getTemperature()))
