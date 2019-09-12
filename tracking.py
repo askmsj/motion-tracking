@@ -48,8 +48,8 @@ print(config_data)
 
 
 #video resolution
-CONST_WIDTH = 640#1280#640#1280#640#1920#1280
-CONST_HEIGHT = 480#720#480#720#480#1080#720
+CONST_WIDTH = 1280#640#1280#640#1920#1280
+CONST_HEIGHT = 720#480#720#480#1080#720
 
 #img correction on/off
 CONST_IMG_ADJ = False
@@ -93,10 +93,12 @@ def findMarkerInAllMarkers(id):
 
 def hideAllMarkers():
     for _m in allMarkers:
+        #if _m.wasVisible() == False
         _m.setVisible(False)
 
     _cm = item.getControlMarker()
     if _cm != None:
+        print('c-m false')
         _cm.setVisible(False)
 
 # if a video path was not supplied, grab the reference to the web cam
@@ -193,7 +195,9 @@ while True:
                         
                     cm = item.getControlMarker()
                     #dla markerow gate (50-100) nie sprawdzamy polozenia
-                    item.visible = True
+                    cm.setVisible(True)
+                    print('-c-m true')
+                    #item.visible = True
 
                 #vehicle - wsztstkie markery >100 to id pojazdow
                 if item.name == 'vehicle' and ids[m][0] > 100 and ids[m][0] < 300:
@@ -217,27 +221,31 @@ while True:
         #statuses
         newStatus = item.status()
         newPosition = item.getPositionPercent()
+        print('***', status, newStatus, item.getControlMarker().visible, item.isVisible())
             
         # 3 samples for 3 successive frames
         status_table.append(item.status());
-        if len(status_table) >= 3:
+        if True: # len(status_table) >= 3:
             isSame = False
             for i in range(len(status_table)):
                 if status == status_table[i]:
                     isSame = True
             
-            if not isSame:
-                newStatus = status_table[2]
+            #if not isSame:
+            #    newStatus = status_table[2]
             
-            print('same:',isSame)
+            #print('same:',isSame)
             status_table.clear()
                     
             
-            #if item.id != None and (not isSame or status != newStatus or position != newPosition):
-            if item.id != None and not isSame:
+            if item.id != None and (status != newStatus or position != newPosition):
+            #if item.id != None and not isSame:
                 every1min = time.time()
                 status = newStatus
                 position = newPosition
+                
+                print('@@@', item.isVisible(), item.getMarker(101).visible if item.getMarker(101) != None else ' - ')
+                
                 print('####item', item.name, status)
                 print(position, item.id, item.urlStatus() )
                 if item.name == 'gate':

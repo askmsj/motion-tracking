@@ -43,8 +43,13 @@ class Marker(object):
         #else:
             return True if self.isMoving() and self.y_current > self.y_last else False
 
+    last_isMoving = None
     def isMoving(self):
-        return abs(self.y_current - self.y_last) > 4 #or abs(self.x_current - self.x_last) > 1
+        return abs(self.y_current - self.y_last) > 5
+        current_isMoving = abs(self.y_current - self.y_last) > 3
+        out = (True if self.last_isMoving == None else last_isMoving) and current_isMoving
+        last_isMoving = current_isMoving
+        return out #abs(self.y_current - self.y_last) > 3 #or abs(self.x_current - self.x_last) > 1
 
     def isMovingRight(self):
         return True if self.isMoving() and self.x_current > self.x_last else False
@@ -62,10 +67,21 @@ class Marker(object):
         #self.x_last = self.x_current
         #self.y_last = self.y_current
 
+    last_isVisible = False
     def setVisible(self, isVisible):
-        self.visible = isVisible
+        
+        self.visible = isVisible if self.last_isVisible == isVisible else self.visible
+        self.last_isVisible = isVisible
+        
+        #self.visible = isVisible
         #print("The shark is being awesome.")
 
+    
+    #def wasVisible(self):
+    #    return self.last_isVisible
+    
+    #def isVisible(self):
+    #    return self.visible and self.last_isVisible
 
 
 #class object (gate/vehicle/testpoint)
@@ -174,6 +190,7 @@ class Item:
     def isVisible(self):
         #return self.visible
         for x in self.markers:
+            
             if x.visible:
                 return True
         return False
@@ -230,7 +247,7 @@ class Item:
             if self.name == 'vehicle':
                 if self.isLeaving():
                     status = 'leaving'
-                if self.isEntering():
+                elif self.isEntering():
                     status = 'entering'
         else:
             if self.name == 'gate':
