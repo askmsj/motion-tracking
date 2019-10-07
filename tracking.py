@@ -62,7 +62,7 @@ if args.get("imgcorrection") != None:
 #pir init
 pir = None
 if CONFIG_PIR_ENABLED:
-    pir = MotionSensor(CONFIG_PIR_PIN_IN)#, pull_up=None, active_state=False)
+    pir = MotionSensor(CONFIG_PIR_PIN_IN, pull_up=None, active_state=False)
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(CONFIG_PIR_PIN_OUT, GPIO.OUT)
     
@@ -141,12 +141,25 @@ position = None
 fps = None
 fps = FPS().start()
 frame_counter = 0
+# - should the frame be processed
+# - camera is in active state and calculations should be done        
+active = True
+activeTimer = time.time()
+stateTimer = time.time()
+
 # loop over frames from the video stream
 while True:
     
-    #pir
-    print('pir-1', pir.is_active)
-    time.sleep(0.5)
+    #pir - false logic - active state is false
+    #active trwa 1 min od aktywacji pir
+    
+    if CONFIG_PIR_ENABLED == 1 and (not pir.is_active):
+        CONST_F_SKIP_QTY = 100
+    else:
+        CONST_F_SKIP_QTY = 4
+        
+    #print('pir-1', active)
+    #time.sleep(0.5)
     
     # grab the current frame, then handle if we are using a
     # VideoStream or VideoCapture object
@@ -191,7 +204,7 @@ while True:
         
     ids = []
     corners = []
-    if f_counter >= CONST_F_SKIP_QTY:
+    if active and f_counter >= CONST_F_SKIP_QTY:
         corners, ids, rejectedImgPoints = aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
         frame = aruco.drawDetectedMarkers(frame, corners, ids)
         f_counter = 0
