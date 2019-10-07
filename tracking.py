@@ -2,15 +2,15 @@
 import numpy as np
 import cv2
 import cv2.aruco as aruco
-#from pprint import pprint
 
-#import random as rng
 from imutils.video import VideoStream
 from imutils.video import FPS
 import argparse
 import imutils
 import time
-#import msvcrt
+
+from gpiozero import MotionSensor
+import RPi.GPIO as GPIO
 
 from classes import Marker
 from classes import Item
@@ -42,10 +42,13 @@ fromFile = False
 #miejsca postojowego bramy (71-99) - id od 1 do 29
 #CONST_GATE_ID = None
 
+#get config params
 config_data = device.getConfig()
 r.baseURL = config_data['destination'] if 'destination' in config_data.keys() else ""
 print(config_data)
-
+CONFIG_PIR_ENABLED = int(config_data['pir_enabled'])
+CONFIG_PIR_PIN_IN = int(config_data['pir_pin_in'])
+CONFIG_PIR_PIN_OUT = int(config_data['pir_pin_out'])
 
 #video resolution
 CONST_WIDTH = 640#1280#640#1280#640#1920#1280
@@ -56,8 +59,15 @@ CONST_IMG_ADJ = False
 if args.get("imgcorrection") != None:
     CONST_IMG_ADJ = args.get("imgcorrection")
 
-
+#pir init
+pir = None
+if CONFIG_PIR_ENABLED:
+    pir = MotionSensor(CONFIG_PIR_PIN_IN)#, pull_up=None, active_state=False)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(CONFIG_PIR_PIN_OUT, GPIO.OUT)
     
+
+
 #define objects
 item = None
 
@@ -133,6 +143,11 @@ fps = FPS().start()
 frame_counter = 0
 # loop over frames from the video stream
 while True:
+    
+    #pir
+    print('pir-1', pir.is_active)
+    time.sleep(0.5)
+    
     # grab the current frame, then handle if we are using a
     # VideoStream or VideoCapture object
     frame = vs.read()
@@ -293,7 +308,7 @@ while True:
 
     #resize output
     if not cli:
-        frame1 = cv2.resize(frame, (int(W/2), int(H/2)))
+        frame1 = frame #cv2.resize(frame, (int(W/2), int(H/2)))
         cv2.imshow("Frame-res", frame1)
         
     key = cv2.waitKey(1) & 0xFF
