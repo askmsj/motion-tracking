@@ -51,8 +51,8 @@ CONFIG_PIR_PIN_IN = int(config_data['pir_pin_in'])
 CONFIG_PIR_PIN_OUT = int(config_data['pir_pin_out'])
 
 #video resolution
-CONST_WIDTH = 640#1280#640#1280#640#1920#1280
-CONST_HEIGHT = 480#720#480#720#480#1080#720
+CONST_WIDTH = 640#1280#640#1920#1280
+CONST_HEIGHT = 480#720#480#1080#720
 
 #img correction on/off
 CONST_IMG_ADJ = False
@@ -132,6 +132,7 @@ parameters = aruco.DetectorParameters_create()
 f_counter = 0
 CONST_F_SKIP_QTY = 4 # skip frames -> run detection every f_skip_qty frame
 status_table = []
+skipped_frames = CONST_F_SKIP_QTY
 
 #object status and position
 status = None
@@ -141,11 +142,10 @@ position = None
 fps = None
 fps = FPS().start()
 frame_counter = 0
+
 # - should the frame be processed
 # - camera is in active state and calculations should be done        
-active = True
-activeTimer = time.time()
-stateTimer = time.time()
+
 
 # loop over frames from the video stream
 while True:
@@ -153,12 +153,18 @@ while True:
     #pir - false logic - active state is false
     #active trwa 1 min od aktywacji pir
     
-    if CONFIG_PIR_ENABLED == 1 and (not pir.is_active):
-        CONST_F_SKIP_QTY = 100
-    else:
-        CONST_F_SKIP_QTY = 4
-        
-    #print('pir-1', active)
+    if CONFIG_PIR_ENABLED == 1:
+        if not pir.is_active:
+           skipped_frames = CONST_F_SKIP_QTY
+           GPIO.output(CONFIG_PIR_PIN_OUT, GPIO.HIGH)
+        else:
+           skipped_frames = 100
+           GPIO.output(CONFIG_PIR_PIN_OUT, GPIO.LOW)
+    
+    #od ostatniej zmiany statusu minęła 1min
+    if ((time.time() - every1min) / 12 < 1):
+        skipped_frames = 4
+    
     #time.sleep(0.5)
     
     # grab the current frame, then handle if we are using a
@@ -174,7 +180,7 @@ while True:
         break
 
     #frame coutner
-    frame_counter += 1#frame_counter + 1
+    frame_counter += 1 #frame_counter + 1
     
     # resize the frame (so we can process it faster) and grab the
     #frame = imutils.resize(frame, width=640)
@@ -204,7 +210,10 @@ while True:
         
     ids = []
     corners = []
-    if active and f_counter >= CONST_F_SKIP_QTY:
+    if True: #f_counter >= skipped_frames: #CONST_F_SKIP_QTY:
+        
+        print('pir-1', pir.is_active, CONST_F_SKIP_QTY)
+        
         corners, ids, rejectedImgPoints = aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
         frame = aruco.drawDetectedMarkers(frame, corners, ids)
         f_counter = 0
