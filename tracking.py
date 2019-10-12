@@ -322,15 +322,15 @@ while True:
             
     #import json
     #every 5 mins
-    if ((time.time() - every5min) / 3 > 1):
+    if ((time.time() - every5min) / 10 > 1):
         print(str(item.getControlMarker().id) + ':' + str(item.id) + ':' + str(device.getTemperature()))
         
         every5min = time.time()
         jd = device.getJsonData(str(item.getControlMarker().id))
         post_r = r.post("device/" + str(device.getSerial()), jd)
-        print('post res:', post_r)
-        if post_r and is_alert == False:
-            runAlert()
+        #print('post res:', post_r)
+        #if post_r and is_alert == False:
+        #    runAlert()
             
     
     #print fps

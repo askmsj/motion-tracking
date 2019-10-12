@@ -9,7 +9,7 @@ from queue import Queue
 from queue import LifoQueue
 import time
 from datetime import datetime
-import alert
+#import alert
 
 #def __init__(self):
 #    a = alert(4)
@@ -23,7 +23,7 @@ def post_request(url, data):
     timestamp = datetime.timestamp(now)
     r = requests.post(url = url, data = {'data': data})
     #print(r.content)
-    print('is_alert', is_alert) 
+    #print('is_alert', is_alert) 
     if r.status_code == 200:
         q.put({url, r.json()['is_alert'], timestamp})
     
