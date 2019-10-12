@@ -24,15 +24,9 @@ def post_request(url, data):
     r = requests.post(url = url, data = {'data': data})
     #print(r.content)
     print('is_alert', is_alert) 
-    if r.status_code:# == 200:
-        if r.json()['is_alert'] and is_alert == False:
-            #runAlert()
-            
-            print('aalleerrtt', is_alert) 
-        #print(url, r)
-        print('thread end', url, r.status_code, r.json(), datetime.fromtimestamp(timestamp))
+    if r.status_code == 200:
         q.put({url, r.json()['is_alert'], timestamp})
-        print(q.qsize())
+    
     #print('thread end')
 
     
@@ -83,15 +77,12 @@ def post(_url, _params = {}):
         #print('main before')
         t.start()
         
-        print('main wait', q.qsize(),q.empty())
         while not q.empty():
             #url, r.json()['is_alert'], timestamp
             url, content, timestamp = q.get()
-            print(url, content, timestamp)
-            print('thread data;', url, content)#, datetime.fromtimestamp(timestamp))
             #do_work(item)
             q.task_done()
-            return content
+            return None #content
             
         #print(r.content)
     except ValueError:
@@ -120,46 +111,6 @@ def main():
     baseURL = "http://192.168.0.199:8080/index.php/api/"
     post("device/0000000006a4317e", out)
 
-import RPi.GPIO as GPIO
-
-
-def a_thread(LED_PIN):
-    LED_PIN = 4
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BCM)
-    print(GPIO.getmode())
-    GPIO.setup(4, GPIO.OUT, initial=GPIO.HIGH)
-    print('gpio start')
-    GPIO.output(LED_PIN, False)
-    time.sleep(10)
-    GPIO.output(LED_PIN, True)
-    print('gpio end')
-        
-def runAlert1():
-    #GPIO.setwarnings(False)
-    #GPIO.setmode(GPIO.BCM)
-    
-    LED_PIN = 4
-    #GPIO.setup(LED_PIN, GPIO.OUT, initial=GPIO.HIGH)
-    a_thread(LED_PIN)
-    #at = threading.Thread(target=a_thread, args=(LED_PIN,))
-    #at.start()
-        
-    #GPIO.cleanup()
-
-def runAlert():
-    is_alert = True
-    LED_PIN = 4
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BCM)
-    print(GPIO.getmode())
-    GPIO.setup(4, GPIO.OUT, initial=GPIO.HIGH)
-    print('gpio start')
-    GPIO.output(LED_PIN, False)
-    time.sleep(10)
-    GPIO.output(LED_PIN, True)
-    print('gpio end')
-    is_alert = False
 
 if __name__ == "__main__":
     main()
