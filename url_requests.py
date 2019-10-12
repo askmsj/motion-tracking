@@ -24,8 +24,9 @@ def post_request(url, data):
     r = requests.post(url = url, data = {'data': data})
     #print(r.content)
     #print('is_alert', is_alert) 
-    if r.status_code == 200:
-        q.put({url, r.json()['is_alert'], timestamp})
+    #if r.status_code == 200:
+        #is_alert = r.json()['is_alert'] if r and r.json() and r.json()['is_alert'] else False
+        #q.put({url, r.json()['is_alert'], timestamp})
     
     #print('thread end')
 
@@ -77,12 +78,12 @@ def post(_url, _params = {}):
         #print('main before')
         t.start()
         
-        while not q.empty():
+        #while not q.empty():
             #url, r.json()['is_alert'], timestamp
-            url, content, timestamp = q.get()
+            #url, content, timestamp = q.get()
             #do_work(item)
-            q.task_done()
-            return None #content
+            #q.task_done()
+            #return None #content
             
         #print(r.content)
     except ValueError:

@@ -10,6 +10,6 @@ led_pin=4
 #flip img
 flip_img=1
 #request url destination
-destination=http://192.168.0.199:8080/index.php/api/
+destination=http://192.168.1.199/index.php/api/
 #http://jrg.lab112.pl/index.php/api/
 source=https://github.com/askmsj/motion-tracking.git
