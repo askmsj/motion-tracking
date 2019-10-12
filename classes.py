@@ -69,16 +69,26 @@ class Marker(object):
     def isMovingDown(self):
         return True if self.isMoving() and self.y_current > self.y_last else False
 
-    def isMoving(self):
+    def isMoving(self, vertical = True):
         
-        ylt = abs(self.current_coords[0][1] - self.last_coords[0][1])
-        yrt = abs(self.current_coords[1][1] - self.last_coords[1][1])
-        ylb = abs(self.current_coords[3][1] - self.last_coords[3][1])
-        yrb = abs(self.current_coords[2][1] - self.last_coords[2][1])
-        return min(ylt, yrt, yrb, ylb) >= self.MIN_MOVE_PX
+        #if (vertical == True):
+            ylt = abs(self.current_coords[0][1] - self.last_coords[0][1])
+            yrt = abs(self.current_coords[1][1] - self.last_coords[1][1])
+            ylb = abs(self.current_coords[3][1] - self.last_coords[3][1])
+            yrb = abs(self.current_coords[2][1] - self.last_coords[2][1])
+                
+        #    return min(ylt, yrt, yrb, ylb) >= self.MIN_MOVE_PX
+        #else:
+            xlt = abs(self.current_coords[0][0] - self.last_coords[0][0])
+            xrt = abs(self.current_coords[1][0] - self.last_coords[1][0])
+            xlb = abs(self.current_coords[3][0] - self.last_coords[3][0])
+            xrb = abs(self.current_coords[2][0] - self.last_coords[2][0])
+                
+            return min(xlt, xrt, xrb, xlb) >= self.MIN_MOVE_PX or min(ylt, yrt, yrb, ylb) >= self.MIN_MOVE_PX
         
         
     last_isMoving = None
+    
     def isMoving_old(self):
         
         
@@ -89,6 +99,8 @@ class Marker(object):
         return out #abs(self.y_current - self.y_last) > 3 #or abs(self.x_current - self.x_last) > 1
 
     def isMovingRight(self):
+        #return True if self.isMoving() and self.y_current < self.y_last else False
+
         return True if self.isMoving() and self.x_current > self.x_last else False
 
     def isMovingLeft(self):
@@ -100,6 +112,8 @@ class Marker(object):
         
     def update(self):
         self.x_last=self.x_last
+        self.y_last=self.y_last
+        
         #self.visible = False
         #self.x_last = self.x_current
         #self.y_last = self.y_current
@@ -139,6 +153,7 @@ class Item:
     visible = None
     markers = []
     last_status = None
+    vartical = False
     rtl = False #true if leaving is the same as closing
             #false if logic is reverse
     
@@ -218,14 +233,24 @@ class Item:
     #dla vehicle kamera nad pojazdem
     def isLeaving(self):
         for x in self.markers:
-            if (self.rtl == False and x.visible and x.isMovingDown()) or (self.rtl == True and x.visible and x.isMovingUp()):
-                return True
+            if self.vertical == True:
+                if (self.rtl == False and x.visible and x.isMovingDown()) or (self.rtl == True and x.visible and x.isMovingUp()):
+                    return True
+            else:
+                if x.visible and x.isMovingLeft():
+                    return True
+                
         return False
 
     def isEntering(self):
         for x in self.markers:
-            if (self.rtl == False and x.visible and x.isMovingUp()) or (self.rtl == True and x.visible and x.isMovingDown()):
-                return True
+            if self.vertical == True:
+                if (self.rtl == False and x.visible and x.isMovingUp()) or (self.rtl == True and x.visible and x.isMovingDown()):
+                    return True
+            else:
+                if x.visible and x.isMovingRight():
+                    return True
+                
         return False
 
     def isVisible(self):

@@ -133,7 +133,7 @@ parameters = aruco.DetectorParameters_create()
 
 #skip frames?
 f_counter = 0
-CONST_F_SKIP_QTY = 4 # skip frames -> run detection every f_skip_qty frame
+CONST_F_SKIP_QTY = 2 # skip frames -> run detection every f_skip_qty frame
 status_table = []
 skipped_frames = CONST_F_SKIP_QTY
 
