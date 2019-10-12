@@ -2,10 +2,14 @@
 #mode gate set gate_id marker
 gate_id=51
 #pir pin in / out
-pir_enabled=1
+pir_enabled=0
 pir_pin_in=20
 pir_pin_out=21
+#alert led pin out
+led_pin=4
+#flip img
+flip_img=1
 #request url destination
-destination=http://192.168.0.199/index.php/api/
+destination=http://192.168.0.199:8080/index.php/api/
 #http://jrg.lab112.pl/index.php/api/
 source=https://github.com/askmsj/motion-tracking.git

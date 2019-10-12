@@ -34,8 +34,9 @@ ap.add_argument("-imgadj", "--imgcorrection", type=str,
 _args = ap.parse_args()
 args = vars(_args)
 
-cli = False#args.get("show")
-fromFile = False 
+cli = args.get("show")
+fromFile = False
+is_alert = False
 
 #const
 #gateid - id bramy zakres 51-69 - id id 1 do 19
@@ -45,10 +46,13 @@ fromFile = False
 #get config params
 config_data = device.getConfig()
 r.baseURL = config_data['destination'] if 'destination' in config_data.keys() else ""
-print(config_data)
-CONFIG_PIR_ENABLED = int(config_data['pir_enabled'])
-CONFIG_PIR_PIN_IN = int(config_data['pir_pin_in'])
-CONFIG_PIR_PIN_OUT = int(config_data['pir_pin_out'])
+#print(config_data)
+CONFIG_PIR_ENABLED = int(config_data['pir_enabled']) if 'pir_enabled' in config_data else False
+CONFIG_PIR_PIN_IN = int(config_data['pir_pin_in']) if 'pir_pin_in' in config_data else None
+CONFIG_PIR_PIN_OUT = int(config_data['pir_pin_out']) if 'pir_pin_out' in config_data else None
+
+#flip img
+CONFIG_FLIP_IMG = int(config_data['flip_img']) if 'flip_img' in config_data else None
 
 #video resolution
 CONST_WIDTH = 640#1280#640#1920#1280
@@ -66,8 +70,7 @@ if CONFIG_PIR_ENABLED:
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(CONFIG_PIR_PIN_OUT, GPIO.OUT)
     
-
-
+    
 #define objects
 item = None
 
@@ -87,7 +90,7 @@ elif args.get("gatemarker") != None or 'gate_id' in config_data.keys():
 else:
     item = Item('gate') #default mode - read from marker
 
-print(item.name)
+#print(item.name)
 #quit()
 
 allMarkers = item.getMarkers()
@@ -185,7 +188,9 @@ while True:
     # resize the frame (so we can process it faster) and grab the
     #frame = imutils.resize(frame, width=640)
     (H, W, L) = frame.shape#[:2]
-    #frame = cv2.flip(frame, -1)
+    
+    if CONFIG_FLIP_IMG:
+        frame = cv2.flip(frame, -1)
     #frame = imutils.rotate_bound(frame, -90)
     
         
@@ -212,7 +217,7 @@ while True:
     corners = []
     if True: #f_counter >= skipped_frames: #CONST_F_SKIP_QTY:
         
-        print('pir-1', pir.is_active, CONST_F_SKIP_QTY)
+        #print('pir-1', pir.is_active, CONST_F_SKIP_QTY)
         
         corners, ids, rejectedImgPoints = aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
         frame = aruco.drawDetectedMarkers(frame, corners, ids)
@@ -294,14 +299,16 @@ while True:
                 
                 print('####item', item.name, status)
                 print(position, item.id, item.urlStatus())
+                post_r = None
                 if item.name == 'gate':
-                    r.post("gate/" + str(item.id)
+                    post_r = r.post("gate/" + str(item.id)
                    +"/"+item.urlStatus() + "/" + str(position))
                 if item.name == 'vehicle':
                     #print('####veh-id', item.vehicleId)
-                    r.post("vehicle/" + str(item.id)
+                    post_r = r.post("vehicle/" + str(item.id)
                    +"/" + str(item.vehicleId) +"/"+item.urlStatus() + "/" + str(position))
-        
+                #if post_r != None:
+                #    print(post_r)
     
     #fps update
     fps.update()
@@ -315,13 +322,16 @@ while True:
             
     #import json
     #every 5 mins
-    if ((time.time() - every5min) / 15 > 1):
+    if ((time.time() - every5min) / 3 > 1):
         print(str(item.getControlMarker().id) + ':' + str(item.id) + ':' + str(device.getTemperature()))
         
         every5min = time.time()
         jd = device.getJsonData(str(item.getControlMarker().id))
-        r.post("device/" + str(device.getSerial()), jd)
-    
+        post_r = r.post("device/" + str(device.getSerial()), jd)
+        print('post res:', post_r)
+        if post_r and is_alert == False:
+            runAlert()
+            
     
     #print fps
     i=1
@@ -349,3 +359,6 @@ else:
 #cap.release()
 #out.release()
 cv2.destroyAllWindows()
+
+
+
