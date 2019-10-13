@@ -153,7 +153,7 @@ class Item:
     visible = None
     markers = []
     last_status = None
-    vartical = False
+    vertical = False
     rtl = False #true if leaving is the same as closing
             #false if logic is reverse
     
