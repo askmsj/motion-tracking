@@ -9,7 +9,7 @@ class Marker(object):
     y_current = 0
     x_last = 0
     y_last = 0
-    MIN_MOVE_PX = 1
+    MIN_MOVE_PX = 2
     y_min = 0       # min when max opened
     y_max = 0
     last_coords = [[0,0],[0,0],[0,0],[0,0]]
