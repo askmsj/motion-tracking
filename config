@@ -1,10 +1,11 @@
 #mode vehicle set vehicle_id marker
 #mode gate set gate_id marker
 gate_id=51
-#pir pin in / out
-pir_enabled=0
-pir_pin_in=20
-pir_pin_out=21
+#dist pin in / out
+dist_enabled=1
+dist_pin_trig=21
+dist_pin_echo=20
+dist_max=200
 #alert led pin out
 led_pin=4
 #flip img

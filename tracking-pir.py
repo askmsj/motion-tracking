@@ -9,6 +9,7 @@ import argparse
 import imutils
 import time
 
+from gpiozero import MotionSensor
 import RPi.GPIO as GPIO
 
 from classes import Marker
@@ -16,8 +17,6 @@ from classes import Item
 import url_requests as r
 import device_info as device
 
-from alert import Alert
-from hcsr04 import Distance
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
@@ -37,10 +36,8 @@ args = vars(_args)
 
 cli = args.get("show")
 fromFile = False
+is_alert = False
 
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
-        
 #const
 #gateid - id bramy zakres 51-69 - id id 1 do 19
 #miejsca postojowego bramy (71-99) - id od 1 do 29
@@ -50,17 +47,9 @@ GPIO.setmode(GPIO.BCM)
 config_data = device.getConfig()
 r.baseURL = config_data['destination'] if 'destination' in config_data.keys() else ""
 #print(config_data)
-ALERT_PIN = config_data['led_pin'] if 'led_pin' in config_data.keys() else None
-#print(ALERT_PIN)
-alert = Alert(ALERT_PIN)
-alert.start()
-
-#distance sensor
-DIST_ENABLED = config_data['dist_enabled'] if 'dist_enabled' in config_data.keys() else False
-DIST_PIN_TRIG = config_data['dist_pin_trig'] if 'dist_pin_trig' in config_data.keys() else None
-DIST_PIN_ECHO = config_data['dist_pin_echo'] if 'dist_pin_echo' in config_data.keys() else None
-DIST_MAX = config_data['dist_max'] if 'dist_max' in config_data.keys() else -1
-distance = Distance(DIST_PIN_TRIG, DIST_PIN_ECHO)
+CONFIG_PIR_ENABLED = int(config_data['pir_enabled']) if 'pir_enabled' in config_data else False
+CONFIG_PIR_PIN_IN = int(config_data['pir_pin_in']) if 'pir_pin_in' in config_data else None
+CONFIG_PIR_PIN_OUT = int(config_data['pir_pin_out']) if 'pir_pin_out' in config_data else None
 
 #flip img
 CONFIG_FLIP_IMG = int(config_data['flip_img']) if 'flip_img' in config_data else None
@@ -73,7 +62,15 @@ CONST_HEIGHT = 480#720#480#1080#720
 CONST_IMG_ADJ = False
 if args.get("imgcorrection") != None:
     CONST_IMG_ADJ = args.get("imgcorrection")
-   
+
+#pir init
+pir = None
+if CONFIG_PIR_ENABLED:
+    pir = MotionSensor(CONFIG_PIR_PIN_IN, pull_up=None, active_state=False)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(CONFIG_PIR_PIN_OUT, GPIO.OUT)
+    
+    
 #define objects
 item = None
 
@@ -117,9 +114,6 @@ def hideAllMarkers(forceOnce = False):
         #print('c-m false')
         _cm.setVisible(False, forceOnce)
 
-
-#print(str(distance.isOccupied(200)))
-        
 # if a video path was not supplied, grab the reference to the web cam
 if not fromFile and not args.get("video", False):
     print("[INFO] starting video stream...")
@@ -152,13 +146,24 @@ fps = None
 fps = FPS().start()
 frame_counter = 0
 
-
 # - should the frame be processed
 # - camera is in active state and calculations should be done        
 
+
 # loop over frames from the video stream
 while True:
-      
+    
+    #pir - false logic - active state is false
+    #active trwa 1 min od aktywacji pir
+    
+    if CONFIG_PIR_ENABLED == 1:
+        if not pir.is_active:
+           skipped_frames = CONST_F_SKIP_QTY
+           GPIO.output(CONFIG_PIR_PIN_OUT, GPIO.HIGH)
+        else:
+           skipped_frames = 100
+           GPIO.output(CONFIG_PIR_PIN_OUT, GPIO.LOW)
+    
     #od ostatniej zmiany statusu minęła 1min
     if ((time.time() - every1min) / 12 < 1):
         skipped_frames = 4
@@ -211,7 +216,8 @@ while True:
     ids = []
     corners = []
     if True: #f_counter >= skipped_frames: #CONST_F_SKIP_QTY:
-              
+        
+        #print('pir-1', pir.is_active, CONST_F_SKIP_QTY)
         
         corners, ids, rejectedImgPoints = aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
         frame = aruco.drawDetectedMarkers(frame, corners, ids)
@@ -236,7 +242,9 @@ while True:
                         
                     cm = item.getControlMarker()
                     #dla markerow gate (50-100) nie sprawdzamy polozenia
-                    cm.setVisible(True)                  
+                    cm.setVisible(True)
+                    #print('-c-m true')
+                    #item.visible = True
 
                 #vehicle - wsztstkie markery >100 to id pojazdow
                 if item.name == 'vehicle' and ids[m][0] > 100 and ids[m][0] < 300:
@@ -253,8 +261,11 @@ while True:
                 _marker = findMarkerInAllMarkers(ids[m][0])             
                 if _marker != None:
                     #print('mark-1-', _marker.visible)
-                    #_marker.setVisible(True)                
-                    _marker.setFullCoords(corners[m][0])                 
+                    #_marker.setVisible(True)
+                    
+                    _marker.setFullCoords(corners[m][0])
+                    #_marker.setCoords(corners[m][0][0])
+                    #print('mark-2-', corners[m][0])
                         
                 
 
@@ -266,18 +277,6 @@ while True:
         # 3 samples for 3 successive frames
         status_table.append(item.status());
         if True: # len(status_table) >= 3:
-            
-            alert.setAlert()
-            
-            isOccupied = False
-            #mierzenie odleglosci
-            if DIST_ENABLED:
-                isOccupied = distance.isOccupied(DIST_MAX)
-                occupyStatus = newStatus if isOccupied == None else ("parked" if isOccupied else "empty")
-                newStatus = occupyStatus if newStatus != occupyStatus else newStatus
-                #dis = distance.measure()
-                #print('dis: %.lf' %dis)
-            
             isSame = False
             #for i in range(len(status_table)):
                 #if status == status_table[i]:
@@ -330,6 +329,8 @@ while True:
         jd = device.getJsonData(str(item.getControlMarker().id))
         post_r = r.post("device/" + str(device.getSerial()), jd)
         #print('post res:', post_r)
+        #if post_r and is_alert == False:
+        #    runAlert()
             
     
     #print fps
@@ -359,6 +360,5 @@ else:
 #out.release()
 cv2.destroyAllWindows()
 
-del alert
 
 
