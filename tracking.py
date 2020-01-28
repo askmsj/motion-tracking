@@ -267,7 +267,7 @@ while True:
         status_table.append(item.status());
         if True: # len(status_table) >= 3:
             
-            alert.setAlert()
+            #alert.setAlert()
             
             isOccupied = False
             #mierzenie odleglosci
@@ -310,7 +310,11 @@ while True:
                    +"/" + str(item.vehicleId) +"/"+item.urlStatus() + "/" + str(position))
                 #if post_r != None:
                 #    print(post_r)
-    
+            
+            #alert?
+            if item.urlStatus() == 'down':
+                alert.setAlert()
+            
     #fps update
     fps.update()
     fps.stop()
