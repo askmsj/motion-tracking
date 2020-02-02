@@ -59,15 +59,15 @@ alert.start()
 DIST_ENABLED = config_data['dist_enabled'] if 'dist_enabled' in config_data.keys() else False
 DIST_PIN_TRIG = config_data['dist_pin_trig'] if 'dist_pin_trig' in config_data.keys() else None
 DIST_PIN_ECHO = config_data['dist_pin_echo'] if 'dist_pin_echo' in config_data.keys() else None
-DIST_MAX = config_data['dist_max'] if 'dist_max' in config_data.keys() else -1
+DIST_MAX = int(config_data['dist_max']) if 'dist_max' in config_data.keys() else -1
 distance = Distance(DIST_PIN_TRIG, DIST_PIN_ECHO)
 
 #flip img
 CONFIG_FLIP_IMG = int(config_data['flip_img']) if 'flip_img' in config_data else None
 
 #video resolution
-CONST_WIDTH = 640#1280#640#1920#1280
-CONST_HEIGHT = 480#720#480#1080#720
+CONST_WIDTH = 1280#640#1920#1280
+CONST_HEIGHT = 720#480#1080#720
 
 #img correction on/off
 CONST_IMG_ADJ = False
@@ -210,7 +210,7 @@ while True:
         
     ids = []
     corners = []
-    if True: #f_counter >= skipped_frames: #CONST_F_SKIP_QTY:
+    if f_counter >= skipped_frames: #CONST_F_SKIP_QTY:
               
         
         corners, ids, rejectedImgPoints = aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
@@ -273,7 +273,9 @@ while True:
             #mierzenie odleglosci
             if DIST_ENABLED:
                 isOccupied = distance.isOccupied(DIST_MAX)
+                print(distance.measure())
                 occupyStatus = newStatus if isOccupied == None else ("parked" if isOccupied else "empty")
+                print("oc-status: " + occupyStatus + " -isoc: " + str(isOccupied))
                 newStatus = occupyStatus if newStatus != occupyStatus else newStatus
                 #dis = distance.measure()
                 #print('dis: %.lf' %dis)

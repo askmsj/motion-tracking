@@ -63,11 +63,11 @@ class Distance():
         dist = self.measure()
         if dist == None or max_distance <= 0:
             return None
-        if self.measure() < max_distance:
+        if int(dist) < int(max_distance):
             return True
         return False
 
-if __name__ == "__main__":
+if __name__ == "__main1__":
     #GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
     

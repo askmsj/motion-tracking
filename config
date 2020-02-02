@@ -1,16 +1,17 @@
 #mode vehicle set vehicle_id marker
 #mode gate set gate_id marker
-gate_id=51
+vehicle_id=51
 #dist pin in / out
 dist_enabled=1
-dist_pin_trig=21
-dist_pin_echo=20
+dist_pin_trig=20
+dist_pin_echo=21
 dist_max=200
 #alert led pin out
 led_pin=4
 #flip img
-flip_img=1
+flip_img=0
 #request url destination
-destination=http://192.168.1.199/index.php/api/
+destination=http://192.168.0.199/index.php/api/
+#http://192.168.1.199/index.php/api/
 #http://jrg.lab112.pl/index.php/api/
 source=https://github.com/askmsj/motion-tracking.git
