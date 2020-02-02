@@ -56,7 +56,7 @@ alert = Alert(ALERT_PIN)
 alert.start()
 
 #distance sensor
-DIST_ENABLED = config_data['dist_enabled'] if 'dist_enabled' in config_data.keys() else False
+DIST_ENABLED = config_data['dist_enabled']=="1" if 'dist_enabled' in config_data.keys() else False
 DIST_PIN_TRIG = config_data['dist_pin_trig'] if 'dist_pin_trig' in config_data.keys() else None
 DIST_PIN_ECHO = config_data['dist_pin_echo'] if 'dist_pin_echo' in config_data.keys() else None
 DIST_MAX = int(config_data['dist_max']) if 'dist_max' in config_data.keys() else -1
@@ -271,11 +271,11 @@ while True:
             
             isOccupied = False
             #mierzenie odleglosci
-            if DIST_ENABLED:
+            if DIST_ENABLED==1:
                 isOccupied = distance.isOccupied(DIST_MAX)
                 print(distance.measure())
                 occupyStatus = newStatus if isOccupied == None else ("parked" if isOccupied else "empty")
-                print("oc-status: " + occupyStatus + " -isoc: " + str(isOccupied))
+                print("oc-status: %s -isOc: %s" %occupyStatus %str(isOccupied))
                 newStatus = occupyStatus if newStatus != occupyStatus else newStatus
                 #dis = distance.measure()
                 #print('dis: %.lf' %dis)
