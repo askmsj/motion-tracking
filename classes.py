@@ -153,14 +153,19 @@ class Item:
     visible = None
     markers = []
     last_status = None
-    vertical = False
-    rtl = False #true if leaving is the same as closing
-            #false if logic is reverse
+    vertical = False # True when moving in vertical plane (like gate) rtl=None
+                       # False when movinf in horisontal plane  rtl = (T or F)
+    rtl = False #true - horizontal plane - if leaving is the same as closing
+                #false - horizontal plane - if logic is reverse
+                #None - vetical plane
     
-    def __init__(self, name):
+    def __init__(self, name, rtl = None):
         self.name = name
         #if name == 'gate':
         setupMarkers(self)
+        
+        self.vertical = False if rtl != None else True
+        self.rtl = rtl if rtl != None else False
         #self.markers = setupMarkers(self)
 
     
@@ -237,7 +242,8 @@ class Item:
                 if (self.rtl == False and x.visible and x.isMovingDown()) or (self.rtl == True and x.visible and x.isMovingUp()):
                     return True
             else:
-                if x.visible and x.isMovingLeft():
+                #print('isleaving')
+                if x.visible and ((self.rtl == True and x.isMovingLeft()) or (self.rtl == False and x.isMovingRight())):
                     return True
                 
         return False
@@ -248,7 +254,8 @@ class Item:
                 if (self.rtl == False and x.visible and x.isMovingUp()) or (self.rtl == True and x.visible and x.isMovingDown()):
                     return True
             else:
-                if x.visible and x.isMovingRight():
+                #print('isEntering')
+                if x.visible and ((self.rtl == True and x.isMovingRight()) or (self.rtl == False and x.isMovingLeft())):
                     return True
                 
         return False
@@ -275,21 +282,8 @@ class Item:
             min = 1000
             refMarker = self.lastMarker
             for x in self.markers:
-                #print('markerid:' + str(x.id))
                 if x.visible == True:
                     refMarker = x
-                    #if self.isOpening() or self.isEntering():
-                    #    if refMarker == None:
-                    #        refMarker = x
-                    #    else:
-                    #        refMarker = x if x.id < refMarker.id else refMarker
-                    #elif self.isClosing() or self.isLeaving():
-                    #    if refMarker == None:
-                    #        refMarker = x
-                    #    else:
-                    #        refMarker = x if x.id > refMarker.id else refMarker
-                    #else:
-                    #    refMarker = x
 
             self.lastMarker = refMarker        
             return refMarker.id if refMarker != None else -1

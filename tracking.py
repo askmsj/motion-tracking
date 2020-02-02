@@ -49,9 +49,7 @@ GPIO.setmode(GPIO.BCM)
 #get config params
 config_data = device.getConfig()
 r.baseURL = config_data['destination'] if 'destination' in config_data.keys() else ""
-#print(config_data)
 ALERT_PIN = config_data['led_pin'] if 'led_pin' in config_data.keys() else None
-#print(ALERT_PIN)
 alert = Alert(ALERT_PIN)
 alert.start()
 
@@ -65,9 +63,12 @@ distance = Distance(DIST_PIN_TRIG, DIST_PIN_ECHO)
 #flip img
 CONFIG_FLIP_IMG = int(config_data['flip_img']) if 'flip_img' in config_data else None
 
+#rtl - vertica or horizontal plane
+RTL = int(config_data['rtl']) if 'rtl' in config_data else None
+
 #video resolution
-CONST_WIDTH = 1280#640#1920#1280
-CONST_HEIGHT = 720#480#1080#720
+CONST_WIDTH = 640#1280#640#1920#1280
+CONST_HEIGHT = 480#720#480#1080#720
 
 #img correction on/off
 CONST_IMG_ADJ = False
@@ -83,18 +84,16 @@ every5min=time.time()
 
 #if vh is given - vehicle mode else gate (gate is default)
 if args.get("vehiclemarker") != None or 'vehicle_id' in config_data.keys():
-    item = Item('vehicle')
+    item = Item('vehicle', RTL)
     mv = args.get("vehiclemarker") if args.get("vehiclemarker") != None else config_data['vehicle_id']
     item.setControlMarker(Marker(int(mv)))
 elif args.get("gatemarker") != None or 'gate_id' in config_data.keys():
-    item = Item('gate')
+    item = Item('gate', RTL)
     mg = args.get("gatemarker") if args.get("gatemarker") != None else config_data['gate_id']
     item.setControlMarker(Marker(int(mg)))
 else:
-    item = Item('gate') #default mode - read from marker
+    item = Item('gate', RTL) #default mode - read from marker
 
-#print(item.name)
-#quit()
 
 allMarkers = item.getMarkers()
 
@@ -114,11 +113,8 @@ def hideAllMarkers(forceOnce = False):
 
     _cm = item.getControlMarker()
     if _cm != None:
-        #print('c-m false')
         _cm.setVisible(False, forceOnce)
 
-
-#print(str(distance.isOccupied(200)))
         
 # if a video path was not supplied, grab the reference to the web cam
 if not fromFile and not args.get("video", False):
@@ -139,7 +135,7 @@ parameters = aruco.DetectorParameters_create()
 
 #skip frames?
 f_counter = 0
-CONST_F_SKIP_QTY = 2 # skip frames -> run detection every f_skip_qty frame
+CONST_F_SKIP_QTY = 3 # skip frames -> run detection every f_skip_qty frame
 status_table = []
 skipped_frames = CONST_F_SKIP_QTY
 
@@ -160,8 +156,8 @@ frame_counter = 0
 while True:
       
     #od ostatniej zmiany statusu minęła 1min
-    if ((time.time() - every1min) / 12 < 1):
-        skipped_frames = 4
+    #if ((time.time() - every1min) / 12 < 1):
+    #    skipped_frames = 4
     
     #time.sleep(0.5)
     
@@ -178,7 +174,7 @@ while True:
         break
 
     #frame coutner
-    frame_counter += 1 #frame_counter + 1
+    frame_counter += 1
     
     # resize the frame (so we can process it faster) and grab the
     #frame = imutils.resize(frame, width=640)
@@ -186,12 +182,9 @@ while True:
     
     if CONFIG_FLIP_IMG:
         frame = cv2.flip(frame, -1)
-    #frame = imutils.rotate_bound(frame, -90)
-    
         
     #colour off
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
 
     #img correction functions
     if CONST_IMG_ADJ:
@@ -251,9 +244,7 @@ while True:
                 
                 #gate    
                 _marker = findMarkerInAllMarkers(ids[m][0])             
-                if _marker != None:
-                    #print('mark-1-', _marker.visible)
-                    #_marker.setVisible(True)                
+                if _marker != None:               
                     _marker.setFullCoords(corners[m][0])                 
                         
                 
@@ -273,12 +264,10 @@ while True:
             #mierzenie odleglosci
             if DIST_ENABLED==1:
                 isOccupied = distance.isOccupied(DIST_MAX)
-                print(distance.measure())
+                #print(distance.measure())
                 occupyStatus = newStatus if isOccupied == None else ("parked" if isOccupied else "empty")
-                print("oc-status: %s -isOc: %s" %occupyStatus %str(isOccupied))
+                #print("oc-status: %s -isOc: %s" %(str(occupyStatus), str(isOccupied)))
                 newStatus = occupyStatus if newStatus != occupyStatus else newStatus
-                #dis = distance.measure()
-                #print('dis: %.lf' %dis)
             
             isSame = False
             #for i in range(len(status_table)):

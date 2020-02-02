@@ -1,6 +1,9 @@
 #mode vehicle set vehicle_id marker
 #mode gate set gate_id marker
-vehicle_id=51
+vehicle_id=71
+#right to left (enter/up - left to right) 
+#rtl - None if vertical else horizontal true - R false - L
+#rtl=1 
 #dist pin in / out
 dist_enabled=1
 dist_pin_trig=20
