@@ -268,7 +268,8 @@ while True:
                 occupyStatus = newStatus if isOccupied == None else ("parked" if isOccupied else "empty")
                 #print("oc-status: %s -isOc: %s" %(str(occupyStatus), str(isOccupied)))
                 newStatus = occupyStatus if newStatus != occupyStatus else newStatus
-            
+                item.setLastStatus(newStatus);
+                
             isSame = False
             #for i in range(len(status_table)):
                 #if status == status_table[i]:

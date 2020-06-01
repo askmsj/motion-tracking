@@ -293,6 +293,8 @@ class Item:
         
         #print(CONST_HEIGHT, self.y_current, self.y_current / CONST_HEIGHT) 
         #return self.y_current / CONST_HEIGHT
+    def setLastStatus(self, newStatus):
+        self.last_status = newStatus
     
     def status(self):
         #print(len(self.markers))
