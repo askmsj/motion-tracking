@@ -7,7 +7,9 @@ class Distance():
     
     PIN_TRIG = None
     PIN_ECHO = None
-
+    last_status = None
+    last_result = None
+    
     def __init__(self, pin_trig, pin_echo):
         self.PIN_TRIG = int(pin_trig)
         self.PIN_ECHO = int(pin_echo)
@@ -59,13 +61,30 @@ class Distance():
         #print('odległość: %.lf cm' %distance)
         #time.sleep(1)
     
+    
     def isOccupied(self, max_distance):
         dist = self.measure()
+        result = False;
+        output = False
+        #print('dis: ', dist)
         if dist == None or max_distance <= 0:
-            return None
+            result = None
         if int(dist) < int(max_distance):
-            return True
-        return False
+            result = True
+        
+        #print('res: ', result)
+        #print('last-s: ', self.last_status)
+        #print('last-r ', self.last_result)
+        
+        if self.last_status == result:
+            output = result
+        else:
+            output = self.last_result        
+        
+        self.last_status = result
+        self.last_result = output
+        
+        return output
 
 if __name__ == "__main1__":
     #GPIO.setwarnings(False)
