@@ -67,7 +67,7 @@ class Distance():
         result = False;
         output = False
         #print('dis: ', dist)
-        if dist == None or max_distance <= 0:
+        if dist is None or dist == None or max_distance <= 0:
             result = None
         if int(dist) < int(max_distance):
             result = True
