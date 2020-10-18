@@ -69,6 +69,7 @@ RTL = int(config_data['rtl']) if 'rtl' in config_data else None
 #video resolution
 CONST_WIDTH = 640#1280#640#1920#1280
 CONST_HEIGHT = 480#720#480#1080#720
+CONST_VEHICLE_OUT = 100 if RTL else CONST_WIDTH - 100
 
 #img correction on/off
 CONST_IMG_ADJ = False
@@ -87,6 +88,7 @@ if args.get("vehiclemarker") != None or 'vehicle_id' in config_data.keys():
     item = Item('vehicle', RTL)
     mv = args.get("vehiclemarker") if args.get("vehiclemarker") != None else config_data['vehicle_id']
     item.setControlMarker(Marker(int(mv)))
+    item.setConstants(None, None, 100, CONST_WIDTH - 100)
 elif args.get("gatemarker") != None or 'gate_id' in config_data.keys():
     item = Item('gate', RTL)
     mg = args.get("gatemarker") if args.get("gatemarker") != None else config_data['gate_id']
@@ -111,9 +113,10 @@ def hideAllMarkers(forceOnce = False):
         #if _m.wasVisible() == False
         _m.setVisible(False, forceOnce)
 
-    _cm = item.getControlMarker()
-    if _cm != None:
-        _cm.setVisible(False, forceOnce)
+    #rezygnujemy z control marker dla vehicle, dla gate zakładamy że zawsze widoaczny
+    #_cm = item.getControlMarker()
+    #if _cm != None:
+    #    _cm.setVisible(False, forceOnce)
 
         
 # if a video path was not supplied, grab the reference to the web cam
@@ -260,7 +263,7 @@ while True:
             
             #alert.setAlert()
             
-            isOccupied = False
+            isOccupied = None
             #mierzenie odleglosci
             if DIST_ENABLED==1:
                 isOccupied = distance.isOccupied(DIST_MAX)

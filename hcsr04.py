@@ -23,38 +23,43 @@ class Distance():
     def measure(self):
         try:
         #clean
-            GPIO.output(self.PIN_TRIG, GPIO.LOW)
-            time.sleep(0.01)
+            avg = 0
+            for x in range(3):
+                
+                GPIO.output(self.PIN_TRIG, GPIO.LOW)
+                time.sleep(0.01)
+            
+                GPIO.output(self.PIN_TRIG, True)
+                time.sleep(0.00001)
+                GPIO.output(self.PIN_TRIG, False)
         
-            GPIO.output(self.PIN_TRIG, True)
-            time.sleep(0.00001)
-            GPIO.output(self.PIN_TRIG, False)
-        
-            sT = eT = time.time()
-            #eT = time.time()
-        
-            echos_counter = 1
-            while GPIO.input(self.PIN_ECHO) == 0:
-                if echos_counter < 1000:
-                    sT = time.time()
-                    echos_counter += 1
-                else:
-                    return None
+                sT = eT = time.time()
+                #eT = time.time()
+            
+                echos_counter = 1
+                while GPIO.input(self.PIN_ECHO) == 0:
+                    if echos_counter < 1000:
+                        sT = time.time()
+                        echos_counter += 1
+                    else:
+                        return None
                 #raise SystemError("Echo pulse was not received")
         
-            while GPIO.input(self.PIN_ECHO) == 1:
-                eT = time.time()
+                while GPIO.input(self.PIN_ECHO) == 1:
+                    eT = time.time()
         
-        #time elapsed
-            te = eT - sT
-        #temperature
-            T = 20
-        #speed of sound in air for given T
-            s_of_s = 331.3 * math.sqrt(1 + (T / 273.15))
-        
-            distance = (te * s_of_s * 100) / 2  # t*v / 2 tam i z powrotem
-               
-            return distance
+            #time elapsed
+                te = eT - sT
+            #temperature
+                T = 20
+            #speed of sound in air for given T
+                s_of_s = 331.3 * math.sqrt(1 + (T / 273.15))
+            
+                distance = (te * s_of_s * 100) / 2  # t*v / 2 tam i z powrotem
+                
+                avg += distance
+            
+            return avg / 3
         
         except:
             return None
