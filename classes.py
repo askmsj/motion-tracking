@@ -62,6 +62,8 @@ class Marker(object):
 
     def getY(self):
         return self.y_current
+    def getX(self):
+        return self.x_current
 
     def isMovingUp(self):
         return True if self.isMoving() and self.y_current < self.y_last else False
@@ -113,7 +115,7 @@ class Marker(object):
     def update(self):
         self.x_last=self.x_last
         self.y_last=self.y_last
-        
+    
         #self.visible = False
         #self.x_last = self.x_current
         #self.y_last = self.y_current
@@ -149,6 +151,8 @@ class Item:
     #one cam version item boundary (pixels)
     bottom = None      #bottom position for reference marker
     top = None
+    left = None
+    right = None
 
     visible = None
     markers = []
@@ -169,9 +173,11 @@ class Item:
         #self.markers = setupMarkers(self)
 
     
-    def setConstants(self, top, bottom):
+    def setConstants(self, top, bottom, left, right):
         self.top = top
         self.bottom = bottom
+        self.left = left
+        self.right = right
 
     def setControlMarker(self, marker):
         marker.setVisible(True)
@@ -267,12 +273,23 @@ class Item:
             if x.visible:
                 return True
         return False
-    
+
+    def isOutsideBound(self):
+        for x in self.markers:
+            if self.rtl == True and x.getX() < self.right:
+                return True
+            if self.rtl == False and x.getX() < self.left:
+                return True
+        return False
+
     def isParked(self):
-        return self.isMoving() == False and self.isVisible() == True
+        return self.isOutsideBound() == False self.isMoving() == False and self.isVisible() == True
+        #return self.isMoving() == False and self.isVisible() == True
+
 
     def isEmpty(self):
-        return self.controlMarker.visible == True and self.isVisible() == False
+        return self.isOutsideBound() == True and self.isMoving() == False and self.isVisible() == False
+        #return self.controlMarker.visible == True and self.isVisible() == False
 
     lastMarker = None
     def getPositionPercent(self):
