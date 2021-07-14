@@ -67,9 +67,8 @@ CONFIG_FLIP_IMG = int(config_data['flip_img']) if 'flip_img' in config_data else
 RTL = int(config_data['rtl']) if 'rtl' in config_data else None
 
 #video resolution
-CONST_WIDTH = 640#1280#640#1920#1280
-CONST_HEIGHT = 480#720#480#1080#720
-CONST_VEHICLE_OUT = 100 if RTL else CONST_WIDTH - 100
+CONST_WIDTH = 1280# 640#1280#640#1920#1280
+CONST_HEIGHT = 720# 480#720#480#1080#720
 
 #img correction on/off
 CONST_IMG_ADJ = False
@@ -88,7 +87,6 @@ if args.get("vehiclemarker") != None or 'vehicle_id' in config_data.keys():
     item = Item('vehicle', RTL)
     mv = args.get("vehiclemarker") if args.get("vehiclemarker") != None else config_data['vehicle_id']
     item.setControlMarker(Marker(int(mv)))
-    item.setConstants(None, None, 100, CONST_WIDTH - 100)
 elif args.get("gatemarker") != None or 'gate_id' in config_data.keys():
     item = Item('gate', RTL)
     mg = args.get("gatemarker") if args.get("gatemarker") != None else config_data['gate_id']
@@ -113,10 +111,9 @@ def hideAllMarkers(forceOnce = False):
         #if _m.wasVisible() == False
         _m.setVisible(False, forceOnce)
 
-    #rezygnujemy z control marker dla vehicle, dla gate zakładamy że zawsze widoaczny
-    #_cm = item.getControlMarker()
-    #if _cm != None:
-    #    _cm.setVisible(False, forceOnce)
+    _cm = item.getControlMarker()
+    if _cm != None:
+        _cm.setVisible(False, forceOnce)
 
         
 # if a video path was not supplied, grab the reference to the web cam
@@ -263,7 +260,7 @@ while True:
             
             #alert.setAlert()
             
-            isOccupied = None
+            isOccupied = False
             #mierzenie odleglosci
             if DIST_ENABLED==1:
                 isOccupied = distance.isOccupied(DIST_MAX)
@@ -285,7 +282,7 @@ while True:
             status_table.clear()
                     
             
-            if item.id != None and (status != newStatus or position != newPosition):
+            if item.id != None and (status != newStatus or position != newPosition or (time.time() - every1min) /10 > 2):
             #if item.id != None and not isSame:
                 every1min = time.time()
                 status = newStatus
@@ -294,17 +291,16 @@ while True:
                 #print('@@@', item.isVisible(), item.getMarker(101).visible if item.getMarker(101) != None else ' - ')
                 
                 print('####item', item.name, status)
-                print(position, item.id, item.urlStatus())
+                print(position, newPosition, item.id, item.urlStatus(), item.vehicleId)
                 post_r = None
                 if item.name == 'gate':
                     post_r = r.post("gate/" + str(item.id)
                    +"/"+item.urlStatus() + "/" + str(position))
                 if item.name == 'vehicle':
-                    #print('####veh-id', item.vehicleId)
-                    post_r = r.post("vehicle/" + str(item.id)
-                   +"/" + str(item.vehicleId) +"/"+item.urlStatus() + "/" + str(position))
-                #if post_r != None:
-                #    print(post_r)
+                    print('####veh-id', item.vehicleId, str(item.id), str(item.vehicleId))
+                    post_r = r.post("vehicle/" + str(item.id) + "/" + str(item.vehicleId) + "/" + item.urlStatus() + "/" + str(position))
+                if post_r != None:
+                    print(post_r)
             
             #alert?
             if item.urlStatus() == 'down':
@@ -322,8 +318,8 @@ while True:
             
     #import json
     #every 5 mins
-    if ((time.time() - every5min) / 10 > 1):
-        print(str(item.getControlMarker().id) + ':' + str(item.id) + ':' + str(device.getTemperature()))
+    if ((time.time() - every5min) / 10 > 5):
+        print(str(item.getControlMarker().id) + ':' + str(item.id) + ':' + str(device.getTemperature()) + ":" + str(item.vehicleId))
         
         every5min = time.time()
         jd = device.getJsonData(str(item.getControlMarker().id))
