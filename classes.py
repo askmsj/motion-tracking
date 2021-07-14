@@ -283,7 +283,7 @@ class Item:
         return False
 
     def isParked(self):
-        return self.isOutsideBound() == False self.isMoving() == False and self.isVisible() == True
+        return self.isOutsideBound() == False and self.isMoving() == False and self.isVisible() == True
         #return self.isMoving() == False and self.isVisible() == True
 
 
